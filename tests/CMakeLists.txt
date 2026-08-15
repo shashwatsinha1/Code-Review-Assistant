@@ -49,3 +49,37 @@ set_tests_properties(
     PROPERTIES
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
+
+add_code_review_test(
+    ClangASTTest
+    test_clang_ast.cpp
+)
+
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
+add_test(
+    NAME WebAPITest
+    COMMAND
+        ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/test_web_api.py
+        $<TARGET_FILE:CodeReviewWeb>
+)
+
+set_tests_properties(
+    WebAPITest
+    PROPERTIES
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
+
+add_executable(SourceLocationTest test_source_location.cpp)
+
+target_link_libraries(
+    SourceLocationTest
+    PRIVATE
+    CodeReviewCore
+)
+
+add_test(
+    NAME SourceLocationTest
+    COMMAND SourceLocationTest
+)

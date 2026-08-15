@@ -33,6 +33,7 @@ add_library(
     src/RuleFactory.cpp
     src/SourceFile.cpp
     src/SourceContext.cpp
+    src/ClangASTParser.cpp
 )
 
 target_include_directories(
@@ -57,6 +58,31 @@ target_link_libraries(
     PRIVATE
     CodeReviewCore
 )
+
+add_executable(
+    CodeReviewWeb
+    src/WebServer.cpp
+)
+
+target_link_libraries(
+    CodeReviewWeb
+    PRIVATE
+    CodeReviewCore
+)
+
+target_compile_definitions(
+    CodeReviewWeb
+    PRIVATE
+    WEB_ROOT="${PROJECT_SOURCE_DIR}/web"
+)
+
+if(WIN32)
+    target_link_libraries(
+        CodeReviewWeb
+        PRIVATE
+        ws2_32
+    )
+endif()
 
 enable_testing()
 

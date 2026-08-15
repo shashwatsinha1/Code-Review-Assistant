@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Code Review Assistant</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <main class="app-shell">
+        <header class="app-header">
+            <div>
+                <p class="eyebrow">Static Analysis Workbench</p>
+                <h1>Code Review Assistant</h1>
+            </div>
+            <div class="server-state" id="status">Ready</div>
+        </header>
+
+        <section class="review-layout">
+            <section class="panel editor-panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Editor</h2>
+                        <p id="lineCount">1 line</p>
+                    </div>
+                    <div class="toolbar">
+                        <select id="language" aria-label="Language">
+                            <option value="cpp">C++</option>
+                        </select>
+                        <button class="secondary-button" id="exampleButton" type="button">
+                            Example
+                        </button>
+                        <button class="secondary-button" id="clearButton" type="button">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+
+                <div class="code-editor" id="editorShell">
+                    <div class="line-gutter" id="lineNumbers" aria-hidden="true"></div>
+                    <textarea id="code" spellcheck="false" wrap="off" aria-label="C++ source code"></textarea>
+                </div>
+
+                <div class="editor-footer">
+                    <div class="selected-line" id="selectedLine">No line selected</div>
+                    <button id="reviewButton" type="button">Review Code</button>
+                </div>
+            </section>
+
+            <section class="panel results-panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Review Summary</h2>
+                        <p id="summary">Ready to review</p>
+                    </div>
+                    <div class="total-issues" id="totalIssues">0</div>
+                </div>
+
+                <div class="summary-grid">
+                    <div class="summary-card critical">
+                        <span>Critical</span>
+                        <strong id="criticalCount">0</strong>
+                    </div>
+                    <div class="summary-card high">
+                        <span>High</span>
+                        <strong id="highCount">0</strong>
+                    </div>
+                    <div class="summary-card medium">
+                        <span>Medium</span>
+                        <strong id="mediumCount">0</strong>
+                    </div>
+                    <div class="summary-card low">
+                        <span>Low</span>
+                        <strong id="lowCount">0</strong>
+                    </div>
+                </div>
+
+                <div class="filters" role="group" aria-label="Severity filters">
+                    <button class="filter-button active" data-filter="ALL" type="button">All</button>
+                    <button class="filter-button" data-filter="CRITICAL" type="button">Critical</button>
+                    <button class="filter-button" data-filter="HIGH" type="button">High</button>
+                    <button class="filter-button" data-filter="MEDIUM" type="button">Medium</button>
+                    <button class="filter-button" data-filter="LOW" type="button">Low</button>
+                </div>
+
+                <div class="findings" id="findings"></div>
+            </section>
+        </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
