@@ -83,3 +83,16 @@ add_test(
     NAME SourceLocationTest
     COMMAND SourceLocationTest
 )
+
+add_executable(VariableInfoTest test_variable_info.cpp)
+
+target_link_libraries(
+    VariableInfoTest
+    PRIVATE
+    CodeReviewCore
+)
+
+add_test(
+    NAME VariableInfoTest
+    COMMAND VariableInfoTest
+)
