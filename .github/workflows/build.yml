@@ -42,8 +42,12 @@ jobs:
           cmake --build build \
             --config Release \
             --parallel
-
-      - name: Run tests
+      - name: List tests
+        run: |
+          ctest \
+            --test-dir build \
+            --show-only
+      - name: Run CTest Suite
         run: |
           ctest \
             --test-dir build \
@@ -71,8 +75,13 @@ jobs:
           cmake --build build `
             --config Release `
             --parallel
+      - name: List tests
+        run: |
+          ctest `
+            --test-dir build `
+            --show-only
 
-      - name: Run tests
+      - name: Run CTest suite
         run: |
           ctest `
             --test-dir build `
