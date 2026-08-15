@@ -6,6 +6,10 @@
 #include <sstream>
 #include <string>
 
+#ifndef _WIN32
+#include <sys/wait.h>
+#endif
+
 #include <nlohmann/json.hpp>
 
 namespace fs = std::filesystem;
@@ -24,17 +28,46 @@ CommandResult runCommand(
     const std::string& arguments,
     const fs::path& outputFile
 ) {
-    std::string command =
+    std::string command;
+
+#ifdef _WIN32
+
+    command =
         "cmd /C \"\"" +
         std::string(TEST_EXECUTABLE_PATH) +
         "\" " +
         arguments +
-        " " +
         " > " +
         quote(outputFile.string()) +
         " 2>&1\"";
 
-    int exitCode = std::system(command.c_str());
+#else
+
+    command =
+        quote(std::string(TEST_EXECUTABLE_PATH)) +
+        " " +
+        arguments +
+        " > " +
+        quote(outputFile.string()) +
+        " 2>&1";
+
+#endif
+
+    int rawExitCode = std::system(command.c_str());
+
+    int exitCode = rawExitCode;
+
+#ifndef _WIN32
+
+    if (rawExitCode == -1) {
+        exitCode = -1;
+    } else if (WIFEXITED(rawExitCode)) {
+        exitCode = WEXITSTATUS(rawExitCode);
+    } else if (WIFSIGNALED(rawExitCode)) {
+        exitCode = 128 + WTERMSIG(rawExitCode);
+    }
+
+#endif
 
     std::ifstream output(outputFile);
     std::stringstream buffer;
