@@ -20,6 +20,10 @@ int main() {
     requireSize(nestedFindings, 1, "P001 detects nested loops");
     requireTrue(nestedFindings[0].ruleId == "P001", "P001 rule id");
     requireTrue(nestedFindings[0].severity == Severity::MEDIUM, "P001 severity");
+    requireTrue(
+        nestedFindings[0].title.find("O(n^2)") != std::string::npos,
+        "P001 includes O(n^2) estimate"
+    );
 
     const std::string singleLoopCode =
         "#include <iostream>\n"
@@ -55,6 +59,22 @@ int main() {
         runRule(rule, tripleLoopCode),
         2,
         "P001 reports each loop nested at depth two or deeper"
+    );
+
+    const std::string recursiveCode =
+        "int factorial(int n) {\n"
+        "    if (n <= 1) {\n"
+        "        return 1;\n"
+        "    }\n"
+        "    return n * factorial(n - 1);\n"
+        "}\n";
+
+    auto recursiveFindings = runRule(rule, recursiveCode);
+    requireSize(recursiveFindings, 1, "P002 detects recursion");
+    requireTrue(recursiveFindings[0].ruleId == "P002", "P002 rule id");
+    requireTrue(
+        recursiveFindings[0].description.find("base case") != std::string::npos,
+        "P002 explains base-case risk"
     );
 
     return 0;

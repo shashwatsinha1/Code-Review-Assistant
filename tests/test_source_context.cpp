@@ -126,5 +126,24 @@ int main() {
         );
     }
 
+    {
+        SourceContext context(
+            "int factorial(int n) {\n"
+            "    if (n <= 1) {\n"
+            "        return 1;\n"
+            "    }\n"
+            "    return n * factorial(n - 1);\n"
+            "}\n"
+        );
+
+        const auto& functions =
+            context.getFunctions();
+
+        requireTrue(functions.size() == 1, "function parser records factorial");
+        requireTrue(functions[0].name == "factorial", "function name is factorial");
+        requireTrue(functions[0].line == 1, "function line is recorded");
+        requireTrue(functions[0].recursive, "function parser detects recursion");
+    }
+
     return 0;
 }

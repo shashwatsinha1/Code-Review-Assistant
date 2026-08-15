@@ -40,6 +40,10 @@ SourceContext::SourceContext(
 
     std::vector<int> activeLoopDepths;
 
+    std::vector<int> activeFunctionIndexes;
+
+    std::vector<int> activeFunctionDepths;
+
     scopes.emplace_back();
 
     std::vector<int> activeScopes;
@@ -131,6 +135,10 @@ SourceContext::SourceContext(
 
     std::regex accessPattern(
         R"(\b(\w+)\s*\[\s*([^\]]+)\s*\])"
+    );
+
+    std::regex functionPattern(
+        R"(\b(?:[\w:<>]+\s+)+(\w+)\s*\([^;]*\)\s*(?:const\s*)?\{)"
     );
 
     std::istringstream parser(code);
@@ -325,6 +333,60 @@ SourceContext::SourceContext(
             arrayAccesses.push_back(access);
         }
 
+        if (std::regex_search(
+                line,
+                match,
+                functionPattern
+            )) {
+
+            std::string functionName =
+                match[1].str();
+
+            if (
+                functionName != "if" &&
+                functionName != "for" &&
+                functionName != "while" &&
+                functionName != "switch"
+            ) {
+
+                FunctionInfo function;
+                function.name = functionName;
+                function.line = lineNumber;
+                function.recursive = false;
+                functions.push_back(function);
+
+                activeFunctionIndexes.push_back(
+                    static_cast<int>(functions.size()) - 1
+                );
+
+                activeFunctionDepths.push_back(
+                    braceDepth + 1
+                );
+            }
+        }
+
+        for (int functionIndex : activeFunctionIndexes) {
+
+            FunctionInfo& function =
+                functions[functionIndex];
+
+            if (lineNumber == function.line) {
+                continue;
+            }
+
+            std::regex recursiveCallPattern(
+                "\\b" + function.name + R"(\s*\()"
+            );
+
+            if (std::regex_search(
+                    line,
+                    recursiveCallPattern
+                )) {
+
+                function.recursive = true;
+            }
+        }
+
         for (char ch : line) {
 
             if (ch == '{') {
@@ -352,6 +414,16 @@ SourceContext::SourceContext(
 
                     activeLoopDepths.pop_back();
                 }
+
+                while (
+                    !activeFunctionDepths.empty() &&
+                    braceDepth <
+                        activeFunctionDepths.back()
+                ) {
+
+                    activeFunctionDepths.pop_back();
+                    activeFunctionIndexes.pop_back();
+                }
             }
         }
     }
@@ -373,6 +445,12 @@ const std::vector<ArrayAccessInfo>&
 SourceContext::getArrayAccesses() const {
 
     return arrayAccesses;
+}
+
+const std::vector<FunctionInfo>&
+SourceContext::getFunctions() const {
+
+    return functions;
 }
 
 const std::unordered_map<std::string, SymbolInfo>&

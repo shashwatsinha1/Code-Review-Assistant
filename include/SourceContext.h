@@ -39,6 +39,15 @@ struct ArrayAccessInfo {
     int line;
 };
 
+struct FunctionInfo {
+
+    std::string name;
+
+    int line;
+
+    bool recursive;
+};
+
 struct SymbolInfo {
 
     std::string name;
@@ -67,6 +76,8 @@ private:
     std::vector<LoopInfo> loops;
 
     std::vector<ArrayAccessInfo> arrayAccesses;
+
+    std::vector<FunctionInfo> functions;
 
     std::unordered_map<std::string, SymbolInfo> symbols;
 
@@ -107,6 +118,9 @@ public:
 
     const std::vector<ArrayAccessInfo>&
     getArrayAccesses() const;
+
+    const std::vector<FunctionInfo>&
+    getFunctions() const;
 
     const std::unordered_map<std::string, SymbolInfo>&
     getSymbols() const;
