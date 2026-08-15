@@ -26,4 +26,8 @@ public:
     bool saveJson(
         const std::string& filename
     ) const;
+
+    bool saveHtml(
+        const std::string& filename
+    ) const;
 };

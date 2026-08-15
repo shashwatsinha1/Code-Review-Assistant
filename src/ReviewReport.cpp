@@ -81,6 +81,44 @@ json findingToJson(const ReviewFinding& finding) {
 
     return j;
 }
+
+std::string escapeHtml(const std::string& value) {
+
+    std::string escaped;
+
+    for (char ch : value) {
+
+        switch (ch) {
+
+            case '&':
+                escaped += "&amp;";
+                break;
+
+            case '<':
+                escaped += "&lt;";
+                break;
+
+            case '>':
+                escaped += "&gt;";
+                break;
+
+            case '"':
+                escaped += "&quot;";
+                break;
+
+            case '\'':
+                escaped += "&#39;";
+                break;
+
+            default:
+                escaped += ch;
+                break;
+        }
+    }
+
+    return escaped;
+}
+
 ReviewReport::ReviewReport(
     const std::vector<ReviewFinding>& findings
 )
@@ -235,6 +273,112 @@ bool ReviewReport::saveJson(
     }
 
     file << report.dump(4);
+
+    file.close();
+
+    return true;
+}
+
+bool ReviewReport::saveHtml(
+    const std::string& filename
+) const {
+
+    std::ofstream file(filename);
+
+    if (!file) {
+
+        std::cerr
+            << "Error: Could not open HTML file: "
+            << filename
+            << "\n";
+
+        return false;
+    }
+
+    file
+        << "<!doctype html>\n"
+        << "<html lang=\"en\">\n"
+        << "<head>\n"
+        << "  <meta charset=\"utf-8\">\n"
+        << "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
+        << "  <title>Code Review Report</title>\n"
+        << "  <style>\n"
+        << "    body { font-family: Arial, sans-serif; margin: 0; background: #f5f7fb; color: #172033; }\n"
+        << "    header { background: #172033; color: white; padding: 32px; }\n"
+        << "    main { max-width: 1080px; margin: 0 auto; padding: 24px; }\n"
+        << "    h1 { margin: 0 0 8px; font-size: 32px; }\n"
+        << "    .summary { font-size: 18px; color: #dce6f7; }\n"
+        << "    .finding { background: white; border: 1px solid #d9e0ea; border-radius: 8px; margin: 16px 0; padding: 18px; }\n"
+        << "    .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }\n"
+        << "    .badge { border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: bold; }\n"
+        << "    .severity { background: #ffe8cc; color: #8a3b00; }\n"
+        << "    .category { background: #e8f0ff; color: #17458f; }\n"
+        << "    .rule { background: #ecf8ef; color: #1b6934; }\n"
+        << "    .location { color: #4d5b73; margin-bottom: 12px; }\n"
+        << "    pre { background: #111827; color: #f8fafc; padding: 12px; border-radius: 6px; overflow-x: auto; }\n"
+        << "    p { line-height: 1.5; }\n"
+        << "    .empty { background: white; border: 1px solid #d9e0ea; border-radius: 8px; padding: 18px; }\n"
+        << "  </style>\n"
+        << "</head>\n"
+        << "<body>\n"
+        << "  <header>\n"
+        << "    <h1>Code Review Report</h1>\n"
+        << "    <div class=\"summary\">Total issues: "
+        << findings.size()
+        << "</div>\n"
+        << "  </header>\n"
+        << "  <main>\n";
+
+    if (findings.empty()) {
+
+        file
+            << "    <section class=\"empty\">\n"
+            << "      <h2>No issues found</h2>\n"
+            << "      <p>The analyzer did not report any findings.</p>\n"
+            << "    </section>\n";
+    }
+
+    for (const auto& finding : findings) {
+
+        file
+            << "    <section class=\"finding\">\n"
+            << "      <div class=\"meta\">\n"
+            << "        <span class=\"badge severity\">"
+            << escapeHtml(severityToString(finding.severity))
+            << "</span>\n"
+            << "        <span class=\"badge category\">"
+            << escapeHtml(categoryToString(finding.category))
+            << "</span>\n"
+            << "        <span class=\"badge rule\">"
+            << escapeHtml(finding.ruleId)
+            << "</span>\n"
+            << "      </div>\n"
+            << "      <h2>"
+            << escapeHtml(finding.title)
+            << "</h2>\n"
+            << "      <div class=\"location\">"
+            << escapeHtml(finding.file)
+            << ":"
+            << finding.line
+            << "</div>\n"
+            << "      <pre><code>"
+            << escapeHtml(finding.code)
+            << "</code></pre>\n"
+            << "      <h3>Description</h3>\n"
+            << "      <p>"
+            << escapeHtml(finding.description)
+            << "</p>\n"
+            << "      <h3>Suggestion</h3>\n"
+            << "      <p>"
+            << escapeHtml(finding.suggestion)
+            << "</p>\n"
+            << "    </section>\n";
+    }
+
+    file
+        << "  </main>\n"
+        << "</body>\n"
+        << "</html>\n";
 
     file.close();
 

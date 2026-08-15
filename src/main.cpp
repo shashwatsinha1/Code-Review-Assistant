@@ -24,6 +24,10 @@ void printHelp() {
         << "  --output FILE\n"
         << "      Save the JSON report to the specified file.\n"
         << "      Automatically enables JSON output.\n\n"
+
+        << "  --html FILE\n"
+        << "      Save the review report as an HTML file.\n\n"
+
         << "  --severity LEVEL\n"
         << "      Show issues at or above the specified severity.\n\n"
 
@@ -55,7 +59,10 @@ void printHelp() {
         << "test_projects/sample_project --output my_report.json\n\n"
 
         << "  CodeReviewAssistant "
-        << "test_projects/sample_project --severity HIGH --json\n";
+        << "test_projects/sample_project --severity HIGH --json\n\n"
+
+        << "  CodeReviewAssistant "
+        << "test_projects/sample_project --html report.html\n";
 }
 
 int main(int argc, char* argv[]) {
@@ -82,10 +89,15 @@ int main(int argc, char* argv[]) {
 
     bool saveJson = false;
 
+    bool saveHtml = false;
+
     std::string severityFilter;
 
-    std::string outputFile = 
+    std::string outputFile =
         "review_report.json";
+
+    std::string htmlFile;
+
     for (int i = 1; i < argc; i++) {
 
         std::string argument = argv[i];
@@ -113,6 +125,25 @@ int main(int argc, char* argv[]) {
             outputFile = argv[++i];
 
             saveJson = true;
+        }
+
+        // --html FILE
+        else if (argument == "--html") {
+
+            if (
+                i + 1 >= argc ||
+                std::string(argv[i + 1]).rfind("--", 0) == 0
+            ) {
+
+                std::cerr
+                    << "Error: --html requires a filename.\n";
+
+                return 2;
+            }
+
+            htmlFile = argv[++i];
+
+            saveHtml = true;
         }
 
         // --severity LEVEL
@@ -181,6 +212,7 @@ int main(int argc, char* argv[]) {
             << "<file-or-directory> "
             << "[--json] "
             << "[--output FILE] "
+            << "[--html FILE] "
             << "[--severity LEVEL]\n";
 
         return 2;
@@ -300,6 +332,23 @@ int main(int argc, char* argv[]) {
         std::cout
             << "\nJSON report saved to "
             << outputFile
+            << "\n";
+    }
+
+    // ----------------------------------------
+    // HTML output
+    // ----------------------------------------
+
+    if (saveHtml) {
+
+        if (!report.saveHtml(htmlFile)) {
+
+            return 2;
+        }
+
+        std::cout
+            << "\nHTML report saved to "
+            << htmlFile
             << "\n";
     }
 

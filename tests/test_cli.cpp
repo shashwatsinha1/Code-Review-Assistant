@@ -203,6 +203,31 @@ int main() {
         requireTrue(report["totalIssues"] == 3, "custom JSON totalIssues");
     }
 
+    const fs::path htmlReport = tempDir / "review_report.html";
+    fs::remove(htmlReport);
+
+    auto htmlOutput =
+        run("--html " + pathArg(htmlReport) + " " + sampleProject);
+
+    requireExitCode(
+        htmlOutput,
+        1,
+        "html output exits 1 when findings exist"
+    );
+    requireTrue(fs::exists(htmlReport), "--html creates HTML report");
+
+    {
+        std::ifstream file(htmlReport);
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        std::string html = buffer.str();
+
+        requireContains(html, "<!doctype html>", "HTML report doctype");
+        requireContains(html, "Code Review Report", "HTML report title");
+        requireContains(html, "Total issues: 3", "HTML report total");
+        requireContains(html, "B001", "HTML report contains rule ID");
+    }
+
     auto invalidSeverity = run("--severity ABC " + sampleProject);
     requireExitCode(invalidSeverity, 2, "invalid severity exits 2");
     requireContains(invalidSeverity.output, "Error:", "invalid severity message");
@@ -212,6 +237,9 @@ int main() {
 
     auto missingOutput = run("--output " + sampleProject);
     requireExitCode(missingOutput, 2, "missing output filename exits 2");
+
+    auto missingHtml = run("--html " + sampleProject);
+    requireExitCode(missingHtml, 2, "missing html filename exits 2");
 
     auto unknownOption = run("--something " + sampleProject);
     requireExitCode(unknownOption, 2, "unknown option exits 2");
