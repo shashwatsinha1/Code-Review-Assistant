@@ -49,3 +49,32 @@ jobs:
             --test-dir build \
             --output-on-failure \
             --build-config Release
+
+  windows-build-and-test:
+
+    name: Windows Build and Test
+
+    runs-on: windows-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build `
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build project
+        run: |
+          cmake --build build `
+            --config Release `
+            --parallel
+
+      - name: Run tests
+        run: |
+          ctest `
+            --test-dir build `
+            --output-on-failure `
+            --build-config Release
