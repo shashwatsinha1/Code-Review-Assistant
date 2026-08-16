@@ -96,3 +96,8 @@ add_test(
     NAME VariableInfoTest
     COMMAND VariableInfoTest
 )
+
+add_code_review_test(
+    VariableASTTest
+    test_variable_ast.cpp
+)
